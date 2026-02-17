@@ -1,7 +1,18 @@
+# TeamsFx files
+env/.env.*.user
+env/.env.local
+.localConfigs
+appPackage/build
+
+# dependencies
 node_modules/
-dist/
-assets/
-.azurite/
-*.js.map
-*.d.ts
+
+# misc
 .env
+.deployment
+.DS_Store
+
+# generated files
+appPackage/.generated
+.azurite
+assets
