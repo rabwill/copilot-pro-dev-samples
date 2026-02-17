@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "install:all": "npm install && cd server && npm install && cd ../widgets && npm install",
-    "start:azurite": "npx azurite-table --tableHost 127.0.0.1 --tablePort 10002 --location .azurite --silent",
+    "start:azurite": "npx azurite-table --tableHost 127.0.0.1 --tablePort 10002 --location .azurite ",
     "seed": "cd server && npm run seed",
     "build:widgets": "cd widgets && npm run build",
     "start:server": "cd server && npm start",

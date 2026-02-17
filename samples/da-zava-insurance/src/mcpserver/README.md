@@ -35,21 +35,24 @@ An MCP (Model Context Protocol) server for **Zava Insurance** that exposes claim
 
 ## Quick Start
 
+> **Note:** Run all commands from the root `mcpserver/` directory.
+
 ```bash
-# 1. Install dependencies
-npm install
+# 1. Install ALL dependencies (root + server + widgets)
+#    This is required — each sub-project has its own package.json
+npm run install:all
 
-# 2. Start Azurite (local storage emulator)
-azurite-table --silent &
+# 2. Start Azurite (local storage emulator) — run in a separate terminal
+npm run start:azurite
 
-# 3. Seed the database
+# 3. Seed the database (requires Azurite to be running)
 npm run seed
 
 # 4. Build widgets
 npm run build:widgets
 
 # 5. Start the MCP server (port 3001)
-cd server & npm run dev
+npm run dev:server
 ```
 
 Connect ChatGPT to: `http://localhost:3001/mcp`
