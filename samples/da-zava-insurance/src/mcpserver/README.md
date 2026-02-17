@@ -1,6 +1,6 @@
 # Zava Insurance — MCP Server
 
-An MCP (Model Context Protocol) server for **Zava Insurance** that exposes claims management tools and rich interactive widgets for ChatGPT.
+An MCP (Model Context Protocol) server for **Zava Insurance** that exposes claims management tools and rich interactive widgets for [Microsoft 365 Copilot declarative agents](https://devblogs.microsoft.com/microsoft365dev/build-declarative-agents-for-microsoft-365-copilot-with-mcp/).
 
 ## Tech Stack
 
@@ -55,7 +55,9 @@ npm run build:widgets
 npm run dev:server
 ```
 
-Connect ChatGPT to: `http://localhost:3001/mcp`
+The MCP server will be available at: `http://localhost:3001/mcp`
+
+To learn how to connect this server to a declarative agent for Microsoft 365 Copilot, see [Build declarative agents for Microsoft 365 Copilot with MCP](https://devblogs.microsoft.com/microsoft365dev/build-declarative-agents-for-microsoft-365-copilot-with-mcp/).
 
 ## Sample Prompts
 
