@@ -15,10 +15,10 @@ Azurite is included as a dev dependency — no separate install needed.
 
 ```bash
 npm run install:all        # Install all dependencies
-npm run start:azurite      # Start local Azure Table Storage (port 10002)
-npm run seed               # Seed consultants, projects, assignments
+npm run start:azurite      # Start local Azure Table Storage (port 10002) (keep this running in a terminal)
+npm run seed               # Seed consultants, projects, assignments (in a new terminal)
 npm run build:widgets      # Build widget HTML into assets/
-npm run start:server       # Start MCP server on http://localhost:8000
+npm run start:server       # Start MCP server on http://localhost:3001
 ```
 
 ## Connect
@@ -26,7 +26,7 @@ npm run start:server       # Start MCP server on http://localhost:8000
 ### ChatGPT
 
 **Settings → MCP → Add connector**
-- URL: `http://localhost:8000/mcp`
+- URL: `http://localhost:3001/mcp`
 - Transport: Streamable HTTP
 
 ## MCP Tools

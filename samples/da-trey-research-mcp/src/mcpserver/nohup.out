@@ -10,6 +10,6 @@ Azurite tables ready.
 
   HR Consultant MCP Server
   Transport: Streamable HTTP (stateless)
-  Endpoint:  http://localhost:8000/mcp
-  Health:    http://localhost:8000/health
+  Endpoint:  http://localhost:3001/mcp
+  Health:    http://localhost:3001/health
 

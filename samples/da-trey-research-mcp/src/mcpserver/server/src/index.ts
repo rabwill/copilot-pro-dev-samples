@@ -10,7 +10,7 @@ import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/
 import { createHRServer } from "./mcp-server.js";
 import { ensureTables } from "./db.js";
 
-const PORT = parseInt(process.env.PORT ?? "8000", 10);
+const PORT = parseInt(process.env.PORT ?? "3001", 10);
 
 const app = express();
 
