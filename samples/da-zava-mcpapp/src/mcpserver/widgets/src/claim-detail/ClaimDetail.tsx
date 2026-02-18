@@ -41,7 +41,7 @@ import {
   NoteRegular,
   AddRegular,
 } from "@fluentui/react-icons";
-import { useOpenAiGlobal } from "../hooks/useOpenAiGlobal";
+import { useMcpApp, useMcpToolData } from "../hooks/useMcpApp";
 import { useThemeColors } from "../hooks/useThemeColors";
 import type { ClaimDetailData, Claim, Inspection, PurchaseOrder } from "../types";
 
@@ -135,7 +135,8 @@ function Toast({ message, type, onDismiss }: { message: string; type: "success" 
 export function ClaimDetail() {
   const styles = useStyles();
   const colors = useThemeColors();
-  const data = useOpenAiGlobal("toolOutput") as ClaimDetailData | null;
+  const { app, hostContext } = useMcpApp();
+  const data = useMcpToolData<ClaimDetailData>();
 
   const [activeTab, setActiveTab] = useState("overview");
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -168,15 +169,15 @@ export function ClaimDetail() {
   };
 
   const handleBack = useCallback(async () => {
-    if (window.openai?.callTool) {
-      await window.openai.callTool("show-claims-dashboard", {});
+    if (app) {
+      await app.callServerTool({ name: "show-claims-dashboard", arguments: {} });
     }
-  }, []);
+  }, [app]);
 
   const toggleFullscreen = useCallback(async () => {
-    if (window.openai?.requestDisplayMode) {
-      const current = window.openai.displayMode;
-      await window.openai.requestDisplayMode({ mode: current === "fullscreen" ? "inline" : "fullscreen" });
+    if (app) {
+      const current = hostContext?.displayMode;
+      await app.requestDisplayMode({ mode: current === "fullscreen" ? "inline" : "fullscreen" });
       return;
     }
     try {
@@ -184,16 +185,16 @@ export function ClaimDetail() {
       else await document.exitFullscreen();
     } catch {}
     setIsFullscreen(prev => !prev);
-  }, []);
+  }, [app, hostContext]);
 
-  // ── Save handlers via window.openai.callTool ──────────────────────
+  // ── Save handlers via app.callServerTool ──────────────────────
   const handleSaveClaim = useCallback(async () => {
-    if (!window.openai?.callTool || !data?.claim) return;
+    if (!app || !data?.claim) return;
     setSavingClaim(true);
     try {
       const args: Record<string, unknown> = { claimId: data.claim.id, status: claimStatus };
       if (claimNote.trim()) args.note = claimNote.trim();
-      await window.openai.callTool("update-claim-status", args);
+      await app.callServerTool({ name: "update-claim-status", arguments: args });
       showToast(`Claim status updated to "${claimStatus}"`, "success");
       setEditingClaim(false);
       setClaimNote("");
@@ -202,10 +203,10 @@ export function ClaimDetail() {
     } finally {
       setSavingClaim(false);
     }
-  }, [data?.claim, claimStatus, claimNote]);
+  }, [app, data?.claim, claimStatus, claimNote]);
 
   const handleSaveInspection = useCallback(async (inspId: string) => {
-    if (!window.openai?.callTool) return;
+    if (!app) return;
     setSavingInspection(true);
     try {
       const args: Record<string, unknown> = { inspectionId: inspId };
@@ -214,7 +215,7 @@ export function ClaimDetail() {
       if (inspActions.trim()) {
         args.recommendedActions = inspActions.split("\n").map(a => a.trim()).filter(Boolean);
       }
-      await window.openai.callTool("update-inspection", args);
+      await app.callServerTool({ name: "update-inspection", arguments: args });
       showToast(`Inspection ${inspId} updated`, "success");
       setEditingInspection(null);
     } catch (e) {
@@ -222,15 +223,15 @@ export function ClaimDetail() {
     } finally {
       setSavingInspection(false);
     }
-  }, [inspStatus, inspFindings, inspActions]);
+  }, [app, inspStatus, inspFindings, inspActions]);
 
   const handleSavePO = useCallback(async (poId: string) => {
-    if (!window.openai?.callTool) return;
+    if (!app) return;
     setSavingPO(true);
     try {
       const args: Record<string, unknown> = { purchaseOrderId: poId, status: poStatus };
       if (poNote.trim()) args.note = poNote.trim();
-      await window.openai.callTool("update-purchase-order", args);
+      await app.callServerTool({ name: "update-purchase-order", arguments: args });
       showToast(`Purchase order updated to "${poStatus}"`, "success");
       setEditingPO(null);
       setPONote("");
@@ -239,7 +240,7 @@ export function ClaimDetail() {
     } finally {
       setSavingPO(false);
     }
-  }, [poStatus, poNote]);
+  }, [app, poStatus, poNote]);
 
   // ── Enter edit mode helpers ───────────────────────────────────────
   const startEditClaim = useCallback(() => {

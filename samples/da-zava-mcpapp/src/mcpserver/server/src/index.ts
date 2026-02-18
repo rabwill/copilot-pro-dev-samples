@@ -21,7 +21,7 @@ app.all("/mcp", async (req, res) => {
     const server = createMcpServer();
     const transport = new StreamableHTTPServerTransport({
       sessionIdGenerator: undefined, // stateless
-      enableJsonResponse: true,      // avoid 30s SSE timeout
+      enableJsonResponse: true,
     });
     await server.connect(transport);
     await transport.handleRequest(req, res, req.body);
@@ -35,6 +35,8 @@ app.all("/mcp", async (req, res) => {
 
 // ── Start ──────────────────────────────────────────────────────────────
 app.listen(PORT, () => {
-  console.log(`🚀 Zava Insurance MCP server running at http://localhost:${PORT}`);
+  console.log(
+    `🚀 Zava Insurance MCP server running at http://localhost:${PORT}`
+  );
   console.log(`   MCP endpoint: http://localhost:${PORT}/mcp`);
 });

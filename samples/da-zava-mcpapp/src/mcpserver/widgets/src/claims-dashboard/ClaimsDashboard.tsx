@@ -42,7 +42,7 @@ import {
   NoteRegular,
   ShieldCheckmarkRegular,
 } from "@fluentui/react-icons";
-import { useOpenAiGlobal } from "../hooks/useOpenAiGlobal";
+import { useMcpApp, useMcpToolData } from "../hooks/useMcpApp";
 import { useThemeColors } from "../hooks/useThemeColors";
 import { FakeMap } from "./FakeMap";
 import type {
@@ -326,7 +326,8 @@ function ClaimCard({ claim, colors, styles, onClick }: {
 export function ClaimsDashboard() {
   const styles = useStyles();
   const colors = useThemeColors();
-  const data = useOpenAiGlobal("toolOutput") as ClaimsDashboardData | null;
+  const { app, hostContext } = useMcpApp();
+  const data = useMcpToolData<ClaimsDashboardData>();
 
   const claims = data?.claims ?? [];
   const allInspections = data?.inspections ?? [];
@@ -412,9 +413,9 @@ export function ClaimsDashboard() {
   }, []);
 
   const toggleFullscreen = useCallback(async () => {
-    if (window.openai?.requestDisplayMode) {
-      const cur = window.openai.displayMode;
-      await window.openai.requestDisplayMode({ mode: cur === "fullscreen" ? "inline" : "fullscreen" });
+    if (app) {
+      const cur = hostContext?.displayMode;
+      await app.requestDisplayMode({ mode: cur === "fullscreen" ? "inline" : "fullscreen" });
       setIsFullscreen(p => !p);
       return;
     }
@@ -423,54 +424,54 @@ export function ClaimsDashboard() {
       else await document.exitFullscreen();
     } catch {}
     setIsFullscreen(p => !p);
-  }, []);
+  }, [app, hostContext]);
 
   /* ── Save handlers ─────────────────────────────────────────────────── */
   const handleSaveClaim = useCallback(async () => {
-    if (!window.openai?.callTool || !selectedClaim) return;
+    if (!app || !selectedClaim) return;
     setSavingClaim(true);
     try {
       const a: Record<string, unknown> = { claimId: selectedClaim.id, status: claimStatus };
       if (claimNote.trim()) a.note = claimNote.trim();
-      await window.openai.callTool("update-claim-status", a);
+      await app.callServerTool({ name: "update-claim-status", arguments: a });
       showToast(`Claim updated to "${claimStatus}"`, "success");
       setEditingClaim(false);
       setClaimNote("");
     } catch (e) {
       showToast(`Failed: ${e instanceof Error ? e.message : "Unknown error"}`, "error");
     } finally { setSavingClaim(false); }
-  }, [selectedClaim, claimStatus, claimNote]);
+  }, [app, selectedClaim, claimStatus, claimNote]);
 
   const handleSaveInspection = useCallback(async (inspId: string) => {
-    if (!window.openai?.callTool) return;
+    if (!app) return;
     setSavingInspection(true);
     try {
       const a: Record<string, unknown> = { inspectionId: inspId };
       if (inspStatus) a.status = inspStatus;
       if (inspFindings.trim()) a.findings = inspFindings.trim();
       if (inspActions.trim()) a.recommendedActions = inspActions.split("\n").map(s => s.trim()).filter(Boolean);
-      await window.openai.callTool("update-inspection", a);
+      await app.callServerTool({ name: "update-inspection", arguments: a });
       showToast(`Inspection ${inspId} updated`, "success");
       setEditingInspection(null);
     } catch (e) {
       showToast(`Failed: ${e instanceof Error ? e.message : "Unknown error"}`, "error");
     } finally { setSavingInspection(false); }
-  }, [inspStatus, inspFindings, inspActions]);
+  }, [app, inspStatus, inspFindings, inspActions]);
 
   const handleSavePO = useCallback(async (poId: string) => {
-    if (!window.openai?.callTool) return;
+    if (!app) return;
     setSavingPO(true);
     try {
       const a: Record<string, unknown> = { purchaseOrderId: poId, status: poStatus };
       if (poNote.trim()) a.note = poNote.trim();
-      await window.openai.callTool("update-purchase-order", a);
+      await app.callServerTool({ name: "update-purchase-order", arguments: a });
       showToast(`PO updated to "${poStatus}"`, "success");
       setEditingPO(null);
       setPONote("");
     } catch (e) {
       showToast(`Failed: ${e instanceof Error ? e.message : "Unknown error"}`, "error");
     } finally { setSavingPO(false); }
-  }, [poStatus, poNote]);
+  }, [app, poStatus, poNote]);
 
   /* ── Edit-mode launchers ───────────────────────────────────────────── */
   const startEditClaim = useCallback(() => {

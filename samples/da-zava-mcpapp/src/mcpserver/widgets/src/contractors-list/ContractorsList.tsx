@@ -24,7 +24,7 @@ import {
   LocationRegular,
   CertificateFilled,
 } from "@fluentui/react-icons";
-import { useOpenAiGlobal } from "../hooks/useOpenAiGlobal";
+import { useMcpApp, useMcpToolData } from "../hooks/useMcpApp";
 import { useThemeColors } from "../hooks/useThemeColors";
 import type { ContractorsListData, Contractor } from "../types";
 
@@ -54,7 +54,8 @@ function renderStars(rating: number) {
 export function ContractorsList() {
   const styles = useStyles();
   const colors = useThemeColors();
-  const toolOutput = useOpenAiGlobal("toolOutput") as ContractorsListData | null;
+  const { app, hostContext } = useMcpApp();
+  const toolOutput = useMcpToolData<ContractorsListData>();
   const contractors = toolOutput?.contractors ?? [];
 
   const [search, setSearch] = useState("");
@@ -62,9 +63,10 @@ export function ContractorsList() {
 
   const [isFullscreen, setIsFullscreen] = useState(false);
   const toggleFullscreen = useCallback(async () => {
-    if (window.openai?.requestDisplayMode) {
-      const current = window.openai.displayMode;
-      await window.openai.requestDisplayMode({ mode: current === "fullscreen" ? "inline" : "fullscreen" });
+    if (app) {
+      const current = hostContext?.displayMode;
+      await app.requestDisplayMode({ mode: current === "fullscreen" ? "inline" : "fullscreen" });
+      setIsFullscreen(p => !p);
       return;
     }
     try {
@@ -72,7 +74,7 @@ export function ContractorsList() {
       else await document.exitFullscreen();
     } catch {}
     setIsFullscreen(prev => !prev);
-  }, []);
+  }, [app, hostContext]);
 
   const filtered = useMemo(() => {
     return contractors.filter(c => {

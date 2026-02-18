@@ -1,15 +1,23 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { FluentProvider, webLightTheme, webDarkTheme } from "@fluentui/react-components";
-import { useOpenAiGlobal } from "../hooks/useOpenAiGlobal";
+import { McpAppProvider, useMcpTheme } from "../hooks/useMcpApp";
 import { ClaimDetail } from "./ClaimDetail";
 
-function App() {
-  const theme = useOpenAiGlobal("theme");
+function ThemedApp() {
+  const theme = useMcpTheme();
   return (
     <FluentProvider theme={theme === "dark" ? webDarkTheme : webLightTheme}>
       <ClaimDetail />
     </FluentProvider>
+  );
+}
+
+function App() {
+  return (
+    <McpAppProvider name="Zava Claim Detail">
+      <ThemedApp />
+    </McpAppProvider>
   );
 }
 

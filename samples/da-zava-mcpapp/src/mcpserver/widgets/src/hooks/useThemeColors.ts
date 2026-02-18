@@ -1,4 +1,4 @@
-import { useOpenAiGlobal } from "./useOpenAiGlobal";
+import { useMcpTheme } from "./useMcpApp";
 
 export interface ThemeColors {
   /* Surfaces */
@@ -107,6 +107,6 @@ const darkColors: ThemeColors = {
 };
 
 export function useThemeColors(): ThemeColors {
-  const theme = useOpenAiGlobal("theme");
+  const theme = useMcpTheme();
   return theme === "dark" ? darkColors : lightColors;
 }
