@@ -17,4 +17,4 @@ appPackage/.generated
 # add for .azurite and assets folder
 
 .azurite
-assets/ 
+src/mcpserver/assets/ 

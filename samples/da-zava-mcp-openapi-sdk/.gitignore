@@ -15,4 +15,4 @@ node_modules/
 # generated files
 appPackage/.generated
 .azurite
-assets
+src/mcpserver/assets/ 
