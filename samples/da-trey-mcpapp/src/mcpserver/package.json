@@ -8,7 +8,7 @@
     "build:server": "cd server && npm run build",
     "build": "npm run build:widgets && npm run build:server",
     "seed": "cd server && npm run seed",
-    "start:azurite": "npx azurite-table --tableHost 127.0.0.1 --tablePort 10002 --location .azurite --silent",
+    "start:azurite": "npx azurite-table --tableHost 127.0.0.1 --tablePort 10002 --location .azurite ",
     "start:server": "cd server && npm start",
     "dev:server": "cd server && npm run dev",
     "start": "cd server && npm start",
