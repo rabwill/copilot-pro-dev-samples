@@ -175,7 +175,14 @@ export function Dashboard() {
   // Start inline by default — fullscreen is toggled on demand via button
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  // Track browser fullscreen changes
+  // Sync fullscreen state from MCP host context changes
+  useEffect(() => {
+    if (hostContext?.displayMode !== undefined) {
+      setIsFullscreen(hostContext.displayMode === "fullscreen");
+    }
+  }, [hostContext?.displayMode]);
+
+  // Track browser fullscreen changes (fallback path)
   useEffect(() => {
     const handler = () => setIsFullscreen(!!document.fullscreenElement);
     document.addEventListener("fullscreenchange", handler);
@@ -185,9 +192,11 @@ export function Dashboard() {
   const toggleFullscreen = useCallback(async () => {
     // 1. Try MCP Apps SDK
     try {
-      const current = hostContext?.displayMode;
-      await app?.requestDisplayMode({ mode: current === "fullscreen" ? "inline" : "fullscreen" });
-      return;
+      if (app) {
+        const current = hostContext?.displayMode;
+        await app.requestDisplayMode({ mode: current === "fullscreen" ? "inline" : "fullscreen" });
+        return;
+      }
     } catch { /* not available */ }
     // 2. Try browser Fullscreen API
     try {
@@ -201,7 +210,7 @@ export function Dashboard() {
     } catch { /* blocked by sandbox or not supported */ }
     // 3. CSS-based fallback (always works)
     setIsFullscreen((prev) => !prev);
-  }, []);
+  }, [app, hostContext?.displayMode]);
 
   const [viewState, setViewState] = useState<ViewState>({ view: "overview" });
   const [searchFilter, setSearchFilter] = useState("");

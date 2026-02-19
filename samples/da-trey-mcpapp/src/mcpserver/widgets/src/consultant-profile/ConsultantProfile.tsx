@@ -146,6 +146,14 @@ export function ConsultantProfile() {
   // Fullscreen toggle — starts inline, switches on button click
   const [isFullscreen, setIsFullscreen] = useState(false);
 
+  // Sync fullscreen state from MCP host context changes
+  useEffect(() => {
+    if (hostContext?.displayMode !== undefined) {
+      setIsFullscreen(hostContext.displayMode === "fullscreen");
+    }
+  }, [hostContext?.displayMode]);
+
+  // Track browser fullscreen changes (fallback path)
   useEffect(() => {
     const handler = () => setIsFullscreen(!!document.fullscreenElement);
     document.addEventListener("fullscreenchange", handler);
@@ -154,9 +162,11 @@ export function ConsultantProfile() {
 
   const toggleFullscreen = useCallback(async () => {
     try {
-      const current = hostContext?.displayMode;
-      await app?.requestDisplayMode({ mode: current === "fullscreen" ? "inline" : "fullscreen" });
-      return;
+      if (app) {
+        const current = hostContext?.displayMode;
+        await app.requestDisplayMode({ mode: current === "fullscreen" ? "inline" : "fullscreen" });
+        return;
+      }
     } catch { /* not available */ }
     try {
       if (!document.fullscreenElement) {
@@ -168,7 +178,7 @@ export function ConsultantProfile() {
       }
     } catch { /* not supported */ }
     setIsFullscreen((prev) => !prev);
-  }, []);
+  }, [app, hostContext?.displayMode]);
 
   return (
     <div className={styles.root} style={isFullscreen ? {
