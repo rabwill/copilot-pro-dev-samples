@@ -31,7 +31,7 @@ import {
   FullScreenMaximize24Regular,
   FullScreenMinimize24Regular,
 } from "@fluentui/react-icons";
-import { useOpenAiGlobal } from "../hooks/useOpenAiGlobal";
+import { useMcpToolData, useMcpApp } from "../hooks/useMcpApp";
 import type { ConsultantProfileData, Assignment } from "../types";
 
 const useStyles = makeStyles({
@@ -114,7 +114,8 @@ const useStyles = makeStyles({
 
 export function ConsultantProfile() {
   const styles = useStyles();
-  const toolOutput = useOpenAiGlobal<ConsultantProfileData>("toolOutput");
+  const toolOutput = useMcpToolData<ConsultantProfileData>();
+  const { app, hostContext } = useMcpApp();
   const data = toolOutput;
 
   if (!data?.consultant) {
@@ -152,11 +153,11 @@ export function ConsultantProfile() {
   }, []);
 
   const toggleFullscreen = useCallback(async () => {
-    if (window.openai?.requestDisplayMode) {
-      const current = window.openai.displayMode;
-      await window.openai.requestDisplayMode({ mode: current === "fullscreen" ? "inline" : "fullscreen" });
+    try {
+      const current = hostContext?.displayMode;
+      await app?.requestDisplayMode({ mode: current === "fullscreen" ? "inline" : "fullscreen" });
       return;
-    }
+    } catch { /* not available */ }
     try {
       if (!document.fullscreenElement) {
         await document.documentElement.requestFullscreen();

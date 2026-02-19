@@ -13,7 +13,7 @@ import {
   FullScreenMaximize24Regular,
   FullScreenMinimize24Regular,
 } from "@fluentui/react-icons";
-import { useOpenAiGlobal } from "../hooks/useOpenAiGlobal";
+import { useMcpToolData, useMcpApp } from "../hooks/useMcpApp";
 import { useThemeColors, type ThemeColors } from "../hooks/useThemeColors";
 import type { BulkEditorData, Consultant } from "../types";
 
@@ -113,7 +113,8 @@ interface EditedRow extends Consultant {
 /* ═══════════════════════════════════════════════════════════════════ */
 export function BulkEditor() {
   const t = useThemeColors();
-  const toolOutput = useOpenAiGlobal<BulkEditorData>("toolOutput");
+  const toolOutput = useMcpToolData<BulkEditorData>();
+  const { app, hostContext } = useMcpApp();
   const data = toolOutput ?? { consultants: [] };
 
   // Fullscreen toggle — starts inline, switches on button click
@@ -126,11 +127,11 @@ export function BulkEditor() {
   }, []);
 
   const toggleFullscreen = useCallback(async () => {
-    if (window.openai?.requestDisplayMode) {
-      const current = window.openai.displayMode;
-      await window.openai.requestDisplayMode({ mode: current === "fullscreen" ? "inline" : "fullscreen" });
+    try {
+      const current = hostContext?.displayMode;
+      await app?.requestDisplayMode({ mode: current === "fullscreen" ? "inline" : "fullscreen" });
       return;
-    }
+    } catch { /* not available */ }
     try {
       if (!document.fullscreenElement) {
         await document.documentElement.requestFullscreen();
@@ -202,14 +203,14 @@ export function BulkEditor() {
     setMessage(null);
     try {
       for (const r of dirty) {
-        await window.openai?.callTool?.("update-consultant", {
+        await app?.callServerTool({ name: "update-consultant", arguments: {
           consultantId: r.id,
           name: r.name,
           email: r.email,
           phone: r.phone,
           skills: r.skills,
           roles: r.roles,
-        });
+        }});
       }
       setRows((prev) => prev.map((r) => ({ ...r, _dirty: false })));
       setMessage({ type: "success", text: `Saved ${dirty.length} record(s) successfully.` });

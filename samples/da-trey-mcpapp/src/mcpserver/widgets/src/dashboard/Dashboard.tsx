@@ -36,7 +36,7 @@ import {
   Dismiss16Regular,
   PersonAdd20Regular,
 } from "@fluentui/react-icons";
-import { useOpenAiGlobal } from "../hooks/useOpenAiGlobal";
+import { useMcpToolData, useMcpApp } from "../hooks/useMcpApp";
 import { useThemeColors, type ThemeColors } from "../hooks/useThemeColors";
 import type { DashboardData, Consultant, Project, Assignment } from "../types";
 
@@ -167,7 +167,8 @@ const fallback: DashboardData = { consultants: [], projects: [], assignments: []
 export function Dashboard() {
   const s = useStyles();
   const t = useThemeColors();
-  const toolOutput = useOpenAiGlobal<DashboardData>("toolOutput");
+  const toolOutput = useMcpToolData<DashboardData>();
+  const { app, hostContext } = useMcpApp();
   const data = toolOutput ?? fallback;
   const allAssignments = data.assignments ?? [];
 
@@ -182,12 +183,12 @@ export function Dashboard() {
   }, []);
 
   const toggleFullscreen = useCallback(async () => {
-    // 1. Try Apps SDK
-    if (window.openai?.requestDisplayMode) {
-      const current = window.openai.displayMode;
-      await window.openai.requestDisplayMode({ mode: current === "fullscreen" ? "inline" : "fullscreen" });
+    // 1. Try MCP Apps SDK
+    try {
+      const current = hostContext?.displayMode;
+      await app?.requestDisplayMode({ mode: current === "fullscreen" ? "inline" : "fullscreen" });
       return;
-    }
+    } catch { /* not available */ }
     // 2. Try browser Fullscreen API
     try {
       if (!document.fullscreenElement) {
@@ -1136,11 +1137,11 @@ export function Dashboard() {
                                         setAssignSaving(true); setAssignMessage(null);
                                         try {
                                           const ids = [...assignSelectedIds];
-                                          if (window.openai?.callTool) {
-                                            await window.openai.callTool("bulk-assign-consultants", {
+                                          try {
+                                            await app?.callServerTool({ name: "bulk-assign-consultants", arguments: {
                                               projectId: p.id, consultantIds: ids, role: assignRole.trim(), billable: assignBillable, rate: assignRate,
-                                            });
-                                          } else {
+                                            }});
+                                          } catch {
                                             // Fallback: call the server directly
                                             const base = (window as any).__SERVER_BASE_URL__ ?? "";
                                             const res = await fetch(`${base}/assign`, {
@@ -1154,7 +1155,7 @@ export function Dashboard() {
                                           setAssignSelectedIds(new Set());
                                           // Refresh dashboard data to show the new assignments
                                           try {
-                                            await window.openai?.callTool?.("show-hr-dashboard", {});
+                                            await app?.callServerTool({ name: "show-hr-dashboard", arguments: {} });
                                           } catch { /* refresh is best-effort */ }
                                         } catch (err: any) {
                                           setAssignMessage({ type: "error", text: `Failed: ${err?.message ?? "Unknown error"}` });

@@ -2,7 +2,7 @@
  * HR Consultant MCP Server – Express + Streamable HTTP transport.
  *
  * Stateless mode: each POST /mcp creates a fresh MCP server + transport.
- * Compatible with ChatGPT, Claude, and other MCP clients.
+ * Compatible with ChatGPT, Claude, Microsoft 365 Copilot, and other MCP clients.
  */
 import express, { type Request, type Response } from "express";
 import cors from "cors";

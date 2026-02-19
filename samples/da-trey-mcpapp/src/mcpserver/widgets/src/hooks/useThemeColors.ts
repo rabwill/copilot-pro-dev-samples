@@ -1,25 +1,22 @@
 /**
- * Returns a palette of semantic colours that adapts to the current ChatGPT
- * host theme ("light" | "dark") read from `window.openai.theme`.
+ * Returns a palette of semantic colours that adapts to the current MCP Apps
+ * host theme ("light" | "dark") read from the MCP Apps context.
  *
- * Uses the same poll-based detection as useOpenAiGlobal, plus a
- * `prefers-color-scheme` media-query fallback for non-ChatGPT hosts.
+ * Falls back to a `prefers-color-scheme` media-query for non-MCP hosts.
  */
 import { useState, useEffect, useMemo } from "react";
 
 type ThemeMode = "light" | "dark";
 
+/**
+ * Detect theme from OS preference (fallback when not inside an MCP host).
+ * The primary theme source is useMcpTheme() from useMcpApp — this hook
+ * is kept for use by useThemeColors which needs a standalone detection.
+ */
 function detectTheme(): ThemeMode {
-  // 1. ChatGPT host value
-  const hostTheme = (window as any).openai?.theme;
-  if (hostTheme === "dark") return "dark";
-  if (hostTheme === "light") return "light";
-
-  // 2. OS-level preference
   if (typeof window.matchMedia === "function") {
     if (window.matchMedia("(prefers-color-scheme: dark)").matches) return "dark";
   }
-
   return "light";
 }
 
@@ -27,11 +24,11 @@ export function useThemeMode(): ThemeMode {
   const [mode, setMode] = useState<ThemeMode>(detectTheme);
 
   useEffect(() => {
-    const id = setInterval(() => {
-      const next = detectTheme();
-      setMode((prev) => (prev !== next ? next : prev));
-    }, 300);
-    return () => clearInterval(id);
+    if (typeof window.matchMedia !== "function") return;
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const handler = (e: MediaQueryListEvent) => setMode(e.matches ? "dark" : "light");
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
   }, []);
 
   return mode;
